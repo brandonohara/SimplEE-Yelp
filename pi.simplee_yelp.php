@@ -18,7 +18,7 @@
 			
 		}
 		
-		private function _request($path, $params){
+		private function _request($path, $params = array()){
 			$unsigned_url = "http://api.yelp.com/v2/" . $path . "?" . http_build_query($params);
 		    $token = new OAuthToken(YELP_TOKEN, YELP_TOKEN_SECRET);
 		    $consumer = new OAuthConsumer(YELP_CONSUMER_KEY, YELP_CONSUMER_SECRET_KEY);
@@ -71,6 +71,21 @@
 				array_push($businesses, json_decode(json_encode($business), true));
 			}
 			return ee()->TMPL->parse_variables(ee()->TMPL->tagdata, $businesses);
+		}
+		
+		public function business(){
+			$id = ee()->TMPL->fetch_param("id", NULL);
+			
+			if(!$id)
+				return ee()->TMPL->no_results();
+				
+			$data = $this->_request("business/".$id);
+			
+			if(!$data)
+				return ee()->TMPL->no_results();
+			
+			$business = new Yelp_business($data);
+			return ee()->TMPL->parse_variables_row(ee()->TMPL->tagdata, json_decode(json_encode($business), true));
 		}
 		
 		public function p($item){
